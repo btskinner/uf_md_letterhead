@@ -1,0 +1,201 @@
+\documentclass[11pt]{letter}
+
+% ------------------------------------------------------------------------------
+% PACKAGES/FORMATTING
+% ------------------------------------------------------------------------------
+
+% packages
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{fontspec}
+\usepackage{ebgaramond}
+\usepackage{color}
+\usepackage[table]{xcolor}
+
+% colors
+\definecolor{ufblue}{RGB}{18,63,122}
+\definecolor{uforange}{RGB}{217,101,54}
+
+% overall margins/alignment
+\geometry{
+  paperwidth = 8.5in,
+  paperheight = 11in,
+  left = 1.5in,
+  right = 0.625in}
+
+% body typeface
+\newfontfamily\bodyFont{Times New Roman}[Ligatures=TeX]
+
+% first page header
+\newcommand{\head}{%
+  % change page geometry to account for header
+  \newgeometry{
+    paperwidth = 8.5in,
+    paperheight = 11in,
+    top = 2.5in,
+    bottom = 1.5in,
+    left = 1.5in,
+    right = 0.625in,
+    headheight = 2.25in,
+    headsep = .25in,
+    footskip = .25in
+  }
+  % header:
+  % 1) overall minipage as wrapper
+  % 2) top minipage that spans width and contains logo
+  % 3) bottom minipage that spans width
+  % 4) left bottom minipage: college/dept info
+  % 5) right bottom minipage: sender info
+  %
+  % +---------------------------------------------------+
+  % + (1)                                               +
+  % + +-----------------------------------------------+ +
+  % + + (2)                                           + +
+  % + +-----------------------------------------------+ +
+  % + +-----------------------------------------------+ +
+  % + + (3)                                           + +
+  % + + +-------------------------------------------+ + +
+  % + + + (4)                  |  (5)               + + +
+  % + + +-------------------------------------------+ + +
+  \fancyhead[L]{
+    % overall minipage
+    \begin{minipage}[t]{\linewidth}
+      % logo
+      \begin{minipage}[t]{\linewidth}
+        % assumes logo is of certain size
+        % http://identity.ufl.edu/wp-content/uploads/2015/11/UF_Signature.eps_.zip
+        % NB change in name to remove underscore
+        \hspace*{-0.81in}
+        \includegraphics[height = .5in,
+        keepaspectratio = true]{$logo.path$/$logo.file$}
+      \end{minipage}
+      \begin{minipage}[t]{\linewidth}
+        \begin{minipage}[t]{.69\linewidth}
+          \begin{tabular}[t]{>{\color{ufblue}}l}
+            \hspace*{-.09in}\textbf{$uf.college$} \\
+            \hspace*{-.09in}$uf.department$
+          \end{tabular}
+        \end{minipage}
+        \begin{minipage}[t]{.31\linewidth}
+          % required: name, city, state, zip
+          % optional: street/PO, phone, email
+          \begin{tabular}[t]{>{\color{ufblue}}l}
+            \textbf{$me.name$} \\
+            $if(me.address)$
+            $me.address$ \\
+            $endif$
+            $me.city$, $me.state$, $me.zip$ \\
+            $if(me.phone)$
+            $me.phone$ \\
+            $endif$
+            $if(me.email)$
+            $me.email$ \\
+            $endif$
+          \end{tabular}
+        \end{minipage}
+      \end{minipage}
+    \end{minipage}
+    \renewcommand{\headrulewidth}{0.0pt}
+  }
+}
+
+% footer on first page
+\newcommand{\firstfoot}{%
+  \fancyfoot[L]{%
+    \color{ufblue}{
+      An Equal Opportunity Institution
+    }
+  }
+  \renewcommand{\headrulewidth}{0.0pt}
+}
+
+% blank footer on all but first page
+\newcommand{\restfoot}{%
+  \fancyfoot[L]{}
+  \renewcommand{\headrulewidth}{0.0pt}
+}
+
+% three versions of the same b/c letter class is strange
+\fancypagestyle{firstpage}{\head\firstfoot}
+\fancypagestyle{plain}{\restfoot}
+\fancypagestyle{empty}{\head\firstfoot}
+
+% no page numbers
+\pagenumbering{gobble}
+
+% set base page format (will be all but first page)
+\pagestyle{plain}
+
+% ------------------------------------------------------------------------------
+% DOCUMENT BODY
+% ------------------------------------------------------------------------------
+ 
+\begin{document}
+% change first page format to include header/footer
+\thispagestyle{firstpage}
+
+% set body font type
+{\bodyFont
+
+  % start letter using letter class sections
+  \begin{letter}
+
+    % is <date> in yaml? use that : pull from \today
+    $if(date)$
+    $date$ \\
+    $else$
+    \today \\
+    $endif$
+
+    % is <to> in yaml? fill options that exist : <skip>
+    $if(to)$
+    $if(to.name)$
+    $to.name$ \\
+    $endif$
+    $if(to.address)$
+    $to.address$ \\
+    $endif$
+    $endif$
+
+    % everything written after yaml goes here
+    $body$
+
+    % is <signature.include> in yaml? add signature : <skip>
+    $if(signature.include)$
+    \closing{
+      Sincerely,\\
+      \vspace{0.1in}
+      % is <signature.sign> in yaml? add image : <skip>
+      $if(signature.sign)$
+      % NB: use signature.scale (0-1] to resize image to appropriate size
+      \includegraphics[scale = $signature.scale$]{$signature.file$} \\
+      $endif$
+      % is <signature.name> in yaml? use that : pull from me.name
+      $if(signature.name)$
+      $signature.name$
+      $else$
+      $me.name$
+      $endif$
+      % signature.title overrides me.title
+      % is <signature.title> in yaml? use that : <skip>
+      $if(signature.title)$
+      \\
+      $signature.title$
+      $else$
+      % is <me.title> in yaml? use that : <skip>
+      $if(me.title)$
+      \\
+      $me.title$
+      $endif$
+      $endif$
+    }
+    $endif$
+  \end{letter}
+}
+\end{document}
+
+% ------------------------------------------------------------------------------
+% END TEMPLATE
+% ------------------------------------------------------------------------------
